@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuaggaJS Code 39 & Code 128 Reader</title>
+    <style>
+        #video-container {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>QuaggaJS Code 39 & Code 128 Reader</h1>
+    <div id="video-container"></div>
+
+    <!-- Include the QuaggaJS library -->
+    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+    
+    <script>
+        // Configure and initialize QuaggaJS
+        Quagga.init({
+            inputStream: {
+                type: "LiveStream",
+                target: document.querySelector('#video-container'), // Element to display the video
+                constraints: {
+                    facingMode: "environment" // Use the rear camera
+                }
+            },
+            decoder: {
+                readers: [
+                    "code_39_reader",  // Code 39 reader
+                    "code_128_reader"  // Code 128 reader
+                ]
+            },
+            frequency: 10,  // Adjust the frequency if needed
+            multiple: false, // Set to false for single code reading
+        }, function(err) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            Quagga.start();
+        });
+
+        // Listen for the barcode detection result
+        Quagga.onDetected(function(data) {
+            console.log("Detected:", data.codeResult.code);
+        });
+        
+        // Optional: Listen for when the barcode detection is finished
+        Quagga.onProcessed(function(result) {
+            if (result && result.codeResult) {
+                console.log("Processed result:", result.codeResult.code);
+            }
+        });uagga.init({
+            inputStream: {
+                type: "LiveStream",
+                target: document.querySelector('#video-container'), // Element to display the video
+                constraints: {
+                    facingMode: "environment" // Use the rear camera
+                }
+            },
+            decoder: {
+                readers: [
+                    "code_39_reader",  // Code 39 reader
+                    "code_128_reader"  // Code 128 reader
+                ]
+            },
+            frequency: 10,  // Adjust the frequency if needed
+            multiple: false, // Set to false for single code reading
+        }, function(err) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            Quagga.start();
+        });
+
+        // Listen for the barcode detection result
+        Quagga.onDetected(function(data) {
+            console.log("Detected:", data.codeResult.code);
+        });
+        
+        // Optional: Listen for when the barcode detection is finished
+        Quagga.onProcessed(function(result) {
+            if (result && result.codeResult) {
+                console.log("Processed result:", result.codeResult.code);
+            }
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuaggaJS Barcode Reader from Camera</title>
+    <style>
+        #video {
+            width: 100%;
+            height: auto;
+            border: 1px solid black;
+        }
+        #canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>QuaggaJS Barcode Reader from Camera</h1>
+    <video id="video" autoplay></video>
+    <button id="capture">Capture Photo</button>
+    <canvas id="canvas"></canvas>
+    
+    <!-- Include the QuaggaJS library -->
+    <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
+    
+    <script>
+        // Access the camera and start streaming
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function(err) {
+                console.error("Error accessing the camera: ", err);
+            });
+
+        document.getElementById('capture').addEventListener('click', function() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+
+            // Set canvas size to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw the video frame onto the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Process the image with QuaggaJS
+            processImage(canvas);
+        });
+
+        function processImage(canvas) {
+            // Initialize QuaggaJS
+            Quagga.decodeSingle({
+                src: canvas.toDataURL(), // Convert canvas to image data URL
+                numOfWorkers: 0, // Needs to be 0 for decodeSingle
+                inputStream: {
+                    size: 800 // You can adjust this value if necessary
+                },
+                decoder: {
+                    readers: [
+                        "code_128_reader",
+                        "code_39_reader",
+                        "codabar_reader"
+                    ] // Specify which barcodes to read
+                },
+                multiple: true,
+            }, function(result) {
+                if (result && result.codeResult) {
+                    console.log("Barcode detected:", result.codeResult.code);
+                } else {
+                    console.log("No barcode detected.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
