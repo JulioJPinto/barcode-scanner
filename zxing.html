@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner with Camera</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #video {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+        #barcodeDisplay {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Barcode Scanner</h1>
+
+    <!-- Video feed for camera -->
+    <video id="video" autoplay></video>
+
+    <!-- Display area for the scanned barcode -->
+    <div id="barcodeDisplay">Waiting for barcode scan...</div>
+
+    <!-- ZXing library for barcode scanning -->
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+
+    <script>
+        // Initialize the barcode scanner
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+        const videoElement = document.getElementById('video');
+        const barcodeDisplay = document.getElementById('barcodeDisplay');
+
+        // Function to select the back camera (if available)
+        function selectBackCamera() {
+            return navigator.mediaDevices.enumerateDevices()
+                .then(devices => {
+                    const videoInputDevices = devices.filter(device => device.kind === 'videoinput');
+                    const backCamera = videoInputDevices.find(device => device.label.toLowerCase().includes('back')) || videoInputDevices[0];
+                    return backCamera.deviceId;
+                });
+        }
+
+        // Start the camera and scan for barcodes
+        selectBackCamera().then((deviceId) => {
+            codeReader
+                .decodeFromVideoDevice(deviceId, videoElement, (result, err) => {
+                    if (result) {
+                        // Display the scanned barcode result
+                        barcodeDisplay.innerText = `Scanned Barcode: ${result.text}`;
+                    }
+                    if (err && !(err instanceof ZXing.NotFoundException)) {
+                        console.error(err);
+                    }
+                })
+                .catch(err => console.error(err));
+        });
+    </script>
+
+</body>
+</html>
