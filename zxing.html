@@ -8,17 +8,46 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin-top: 50px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
         }
+
         #video {
             width: 100%;
             max-width: 400px;
-            margin-top: 20px;
+            display: none; /* Hidden until camera is opened */
+            border: 2px solid black;
+            border-radius: 10px;
         }
+
         #barcodeDisplay {
             margin-top: 20px;
             font-size: 1.5rem;
             font-weight: bold;
+        }
+
+        .button-container {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        /* Flexbox container for centering the video */
+        #videoContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 60vh;
+            width: 100%;
         }
     </style>
 </head>
@@ -26,8 +55,16 @@
 
     <h1>Barcode Scanner</h1>
 
-    <!-- Video feed for camera -->
-    <video id="video" autoplay></video>
+    <!-- Buttons to start/stop the camera -->
+    <div class="button-container">
+        <button id="startButton">Start Camera</button>
+        <button id="stopButton" disabled>Stop Camera</button>
+    </div>
+
+    <!-- Video feed container for centering -->
+    <div id="videoContainer">
+        <video id="video" autoplay></video>
+    </div>
 
     <!-- Display area for the scanned barcode -->
     <div id="barcodeDisplay">Waiting for barcode scan...</div>
@@ -36,10 +73,13 @@
     <script src="https://unpkg.com/@zxing/library@latest"></script>
 
     <script>
-        // Initialize the barcode scanner
         const codeReader = new ZXing.BrowserMultiFormatReader();
         const videoElement = document.getElementById('video');
         const barcodeDisplay = document.getElementById('barcodeDisplay');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        let selectedDeviceId;
+        let stream;
 
         // Function to select the back camera (if available)
         function selectBackCamera() {
@@ -52,9 +92,11 @@
         }
 
         // Start the camera and scan for barcodes
-        selectBackCamera().then((deviceId) => {
-            codeReader
-                .decodeFromVideoDevice(deviceId, videoElement, (result, err) => {
+        function startCamera() {
+            selectBackCamera().then((deviceId) => {
+                selectedDeviceId = deviceId;
+                barcodeDisplay.innerText = 'Scanning for barcode...';
+                codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
                     if (result) {
                         // Display the scanned barcode result
                         barcodeDisplay.innerText = `Scanned Barcode: ${result.text}`;
@@ -62,9 +104,32 @@
                     if (err && !(err instanceof ZXing.NotFoundException)) {
                         console.error(err);
                     }
-                })
-                .catch(err => console.error(err));
-        });
+                }).catch(err => console.error(err));
+
+                // Show the video element and enable the stop button
+                videoElement.style.display = 'block';
+                stopButton.disabled = false;
+                startButton.disabled = true;
+            });
+        }
+
+        // Stop the camera
+        function stopCamera() {
+            codeReader.reset();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            // Hide the video element and reset buttons
+            videoElement.style.display = 'none';
+            barcodeDisplay.innerText = 'Camera stopped.';
+            stopButton.disabled = true;
+            startButton.disabled = false;
+        }
+
+        // Attach event listeners to the buttons
+        startButton.addEventListener('click', startCamera);
+        stopButton.addEventListener('click', stopCamera);
     </script>
 
 </body>
